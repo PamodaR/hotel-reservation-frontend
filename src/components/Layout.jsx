@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, Calendar } from 'lucide-react';
+import { Home, Users, Calendar, UserPlus } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles.css';
 
@@ -21,12 +21,22 @@ const Layout = ({ children }) => {
                     >
                         <Home size={20} /> Dashboard
                     </Link>
+
                     <Link
                         to="/home"
                         className={`flex items-center gap-3 font-medium transition-colors ${path === '/home' ? 'text-primary-400' : 'text-gray-400 hover:text-white'}`}
                     >
-                        <Users size={20} /> Booking 
+                        <Users size={20} /> Booking
                     </Link>
+
+                    {/* ✅ Register added here */}
+                    <Link
+                        to="/register"
+                        className={`flex items-center gap-3 font-medium transition-colors ${path === '/register' ? 'text-primary-400' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        <UserPlus size={20} /> Register
+                    </Link>
+
                     <Link
                         to="/help"
                         className={`flex items-center gap-3 font-medium transition-colors ${path === '/help' ? 'text-primary-400' : 'text-gray-400 hover:text-white'}`}

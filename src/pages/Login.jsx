@@ -10,28 +10,57 @@ const Login = () => {
         password: ''
     });
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setError(''); // Clear error when user types
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        setError('');
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Save user data to localStorage
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Show success message
+                alert('Login successful!');
+                
+                // Navigate to dashboard
+                navigate('/dashboard');
+            } else {
+                setError(data.message || 'Login failed');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Unable to connect to server. Please try again.');
+        } finally {
             setLoading(false);
-            // In a real app, you'd save the token here
-            navigate('/dashboard');
-        }, 1500);
+        }
     };
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
             <div className="max-w-md w-full animate-fade-in">
                 <div className="card-glass p-8 md:p-10 relative overflow-hidden">
-                    {/* Decorative background element */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-gold-400"></div>
 
                     <div className="text-center mb-8">
@@ -41,6 +70,12 @@ const Login = () => {
                         <h2 className="text-3xl font-bold text-gray-900 font-serif mb-2">Welcome Back</h2>
                         <p className="text-gray-500">Sign in to access your bookings</p>
                     </div>
+
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            {error}
+                        </div>
+                    )}
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
@@ -94,7 +129,6 @@ const Login = () => {
                                 Sign up now
                             </Link>
                         </p>
-
                     </div>
                 </div>
             </div>

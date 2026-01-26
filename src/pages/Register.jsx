@@ -8,6 +8,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        role: '',
         password: '',
         confirmPassword: ''
     });
@@ -17,7 +18,7 @@ const Register = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        setError(''); // Clear error when user types
+        setError('');
     };
 
     const handleRegister = async (e) => {
@@ -25,7 +26,6 @@ const Register = () => {
         setLoading(true);
         setError('');
 
-        // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             setLoading(false);
@@ -41,6 +41,7 @@ const Register = () => {
                 body: JSON.stringify({
                     name: formData.name,
                     email: formData.email,
+                    role: formData.role,
                     password: formData.password,
                     confirmPassword: formData.confirmPassword
                 })
@@ -72,7 +73,9 @@ const Register = () => {
                         <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3 shadow-inner">
                             <UserPlus className="w-8 h-8 text-primary-600" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 font-serif mb-2">Create Account</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 font-serif mb-2">
+                            Create Account
+                        </h2>
                         <p className="text-gray-500">Join us for exclusive offers</p>
                     </div>
 
@@ -83,8 +86,11 @@ const Register = () => {
                     )}
 
                     <form onSubmit={handleRegister} className="space-y-6">
+                        {/* Full Name */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Full Name
+                            </label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
@@ -99,8 +105,11 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Email */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Email Address
+                            </label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
@@ -115,8 +124,32 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Job Role */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Job Role
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <select
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleChange}
+                                    className="input-field pl-12"
+                                    required
+                                >
+                                    <option value="">Select Job Role</option>
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="USER">Staff Member</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Password
+                            </label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
@@ -131,8 +164,11 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Confirm Password */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Confirm Password
+                            </label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
@@ -159,10 +195,7 @@ const Register = () => {
                     <div className="mt-8 text-center">
                         <p className="text-gray-600 text-sm">
                             Already have an account?{' '}
-                            <Link
-                                to="/"
-                                className="text-primary-700 font-bold hover:underline"
-                            >
+                            <Link to="/" className="text-primary-700 font-bold hover:underline">
                                 Sign in here
                             </Link>
                         </p>

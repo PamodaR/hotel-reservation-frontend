@@ -7,6 +7,8 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import HelpUs from './pages/HelpUs';
 import './styles.css';
+import ViewAllMembers from './pages/ViewAllMembers';
+
 
 const App = () => {
     return (
@@ -18,6 +20,8 @@ const App = () => {
                 {/* Protected Routes with Layout */}
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/home" element={<Layout><Booking /></Layout>} />
+                <Route path="/members" element={<Layout><ViewAllMembers /></Layout>} />
+
                 <Route path="/help" element={<Layout><HelpUs /></Layout>} />
             </Routes>
         </Router>

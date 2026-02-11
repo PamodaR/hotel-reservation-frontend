@@ -1,276 +1,152 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Users2, Trash2, Shield, User as UserIcon, Search, AlertCircle } from 'lucide-react';
+import Table, { TableRow, TableCell } from '../components/ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 const ViewAllMembers = () => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingMember, setEditingMember] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch all members from the API
-  useEffect(() => {
-    fetchMembers();
-  }, []);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-  const fetchMembers = () => {
-    setLoading(true);
-    setError(null);
-    
-    fetch('http://localhost:8080/api/members')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to fetch members');
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/users/all');
+            const data = await response.json();
+
+            if (data.success) {
+                setUsers(data.users);
+            } else {
+                setError(data.message || 'Failed to fetch users');
+            }
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            setError('Unable to connect to server');
+        } finally {
+            setLoading(false);
         }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Fetched members:', data);
-        setMembers(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching members:', err);
-        setError('Failed to load members. Please try again.');
-        setLoading(false);
-      });
-  };
+    };
 
-  const handleDelete = (id) => {
-    if (!window.confirm('Are you sure you want to delete this member?')) return;
-
-    fetch(`http://localhost:8080/api/members/${id}`, { 
-      method: 'DELETE' 
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to delete member');
+    const handleDelete = async (userId) => {
+        if (!window.confirm('Are you sure you want to delete this user?')) {
+            return;
         }
-        return res.json();
-      })
-      .then(response => {
-        console.log('Delete response:', response);
-        // Remove the deleted member from state
-        setMembers(prev => prev.filter(member => member.id !== id));
-        alert('Member deleted successfully!');
-      })
-      .catch(err => {
-        console.error('Error deleting member:', err);
-        alert('Failed to delete member. Please try again.');
-      });
-  };
 
-  const handleUpdate = (member) => {
-    setEditingMember({
-      id: member.id,
-      fullName: member.fullName || '',
-      email: member.email || '',
-      role: member.role || 'USER'
-    });
-    setShowEditModal(true);
-  };
+        try {
+            const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
+                method: 'DELETE',
+            });
 
-  const handleSubmitUpdate = (e) => {
-    e.preventDefault();
+            const data = await response.json();
 
-    fetch(`http://localhost:8080/api/members/${editingMember.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fullName: editingMember.fullName,
-        email: editingMember.email,
-        role: editingMember.role
-      })
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to update member');
+            if (data.success) {
+                // alert('User deleted successfully'); // Optional: replace with toast
+                fetchUsers();
+            } else {
+                alert(data.message || 'Failed to delete user');
+            }
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            alert('Unable to connect to server');
         }
-        return res.json();
-      })
-      .then(response => {
-        console.log('Update response:', response);
-        // Refresh the members list
-        fetchMembers();
-        setShowEditModal(false);
-        setEditingMember(null);
-        alert(response.message || 'Member updated successfully!');
-      })
-      .catch(err => {
-        console.error('Error updating member:', err);
-        alert('Failed to update member. Please try again.');
-      });
-  };
+    };
 
-  const getRoleDisplay = (role) => {
-    if (!role) return 'User';
-    switch (role.toUpperCase()) {
-      case 'ADMIN':
-        return 'Admin';
-      case 'STAFF':
-        return 'Staff Member';
-      case 'USER':
-        return 'User';
-      default:
-        return role;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="p-8 flex justify-center items-center">
-        <div className="text-xl text-gray-600">Loading members...</div>
-      </div>
+    const filteredUsers = users.filter(user =>
+        user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }
 
-  if (error) {
+    const getRoleBadgeColor = (role) => {
+        switch (role) {
+            case 'ADMIN': return 'bg-red-100 text-red-700 border-red-200';
+            case 'STAFF': return 'bg-blue-100 text-blue-700 border-blue-200';
+            default: return 'bg-green-100 text-green-700 border-green-200';
+        }
+    };
+
     return (
-      <div className="p-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-        <button
-          onClick={fetchMembers}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-surface-900 font-serif">Member Management</h1>
+                    <p className="text-surface-500 mt-1">View and manage system users.</p>
+                </div>
+                <div className="w-full md:w-64">
+                    <Input
+                        placeholder="Search members..."
+                        icon={Search}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
 
-  return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">View All Members</h1>
-        <button
-          onClick={fetchMembers}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        >
-          Refresh
-        </button>
-      </div>
-
-      <div className="overflow-x-auto bg-white shadow rounded-lg">
-        <table className="w-full border border-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-4 py-2">No</th>
-              <th className="border px-4 py-2">Name</th>
-              <th className="border px-4 py-2">Email</th>
-              <th className="border px-4 py-2">User Role</th>
-              <th className="border px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
-                  No members found
-                </td>
-              </tr>
-            ) : (
-              members.map((member, index) => (
-                <tr key={member.id} className="text-center hover:bg-gray-50">
-                  <td className="border px-4 py-2">{index + 1}</td>
-                  <td className="border px-4 py-2">{member.fullName || 'N/A'}</td>
-                  <td className="border px-4 py-2">{member.email || 'N/A'}</td>
-                  <td className="border px-4 py-2">{getRoleDisplay(member.role)}</td>
-                  <td className="border px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => handleUpdate(member)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                    >
-                      Update
-                    </button>
-                    <button
-                      onClick={() => handleDelete(member.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+            {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center gap-2">
+                    <AlertCircle size={20} />
+                    {error}
+                </div>
             )}
-          </tbody>
-        </table>
-      </div>
 
-      {/* Edit Modal */}
-      {showEditModal && editingMember && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Update Member</h2>
-            <form onSubmit={handleSubmitUpdate}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={editingMember.fullName}
-                  onChange={(e) => setEditingMember({...editingMember, fullName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={editingMember.email}
-                  onChange={(e) => setEditingMember({...editingMember, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Role
-                </label>
-                <select
-                  value={editingMember.role}
-                  onChange={(e) => setEditingMember({...editingMember, role: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  required
-                >
-                  <option value="USER">User</option>
-                  <option value="STAFF">Staff Member</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingMember(null);
-                  }}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
+            <Card>
+                <div className="overflow-x-auto">
+                    <Table headers={['ID', 'Full Name', 'Email', 'Username', 'Role', 'Actions']}>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan="6" className="text-center py-8 text-surface-500">
+                                    Loading users...
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredUsers.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan="6" className="text-center py-8 text-surface-500">
+                                    No users found matching your search.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredUsers.map((user) => (
+                                <TableRow key={user.id}>
+                                    <TableCell className="font-mono text-xs text-surface-500">#{user.id}</TableCell>
+                                    <TableCell className="font-medium text-surface-900">{user.fullName || '-'}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell>{user.username || '-'}</TableCell>
+                                    <TableCell>
+                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${getRoleBadgeColor(user.role)}`}>
+                                            {user.role === 'ADMIN' ? <Shield size={12} /> : <UserIcon size={12} />}
+                                            {user.role}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <button
+                                            onClick={() => handleDelete(user.id)}
+                                            className="p-2 text-surface-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Delete User"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </Table>
+                </div>
+                {!loading && (
+                    <div className="px-6 py-4 border-t border-surface-100 bg-surface-50/50 rounded-b-2xl">
+                        <p className="text-sm text-surface-500">
+                            Showing {filteredUsers.length} of {users.length} members
+                        </p>
+                    </div>
+                )}
+            </Card>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default ViewAllMembers;

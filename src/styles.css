@@ -3,30 +3,48 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply font-sans bg-gradient-to-br from-gray-50 to-primary-50 min-h-screen text-gray-900;
+    @apply font-sans bg-slate-50 text-surface-900 antialiased;
+    /* Optional: Add a subtle texture or pattern if desired, but clean is better */
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-serif;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight text-surface-900;
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-800 text-white rounded-xl shadow-lg hover:shadow-primary-500/30 transition-all duration-300 hover:-translate-y-0.5 font-medium;
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm focus:bg-white;
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-soft;
   }
 
-  .card-glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  .glass-dark {
+    @apply bg-surface-900/80 backdrop-blur-xl border border-white/10 shadow-soft text-white;
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-300 rounded-full hover:bg-surface-400 transition-colors;
   }
 }
